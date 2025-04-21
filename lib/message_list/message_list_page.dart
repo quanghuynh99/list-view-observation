@@ -13,12 +13,12 @@ class ChatPagedListView<T> extends StatefulWidget {
   final List<T> Function({int num}) createItems;
 
   const ChatPagedListView({
-    Key? key,
+    super.key,
     required this.itemBuilder,
     required this.createItems,
     this.itemKeyExtractor,
     this.onRemove,
-  }) : super(key: key);
+  });
 
   @override
   State<ChatPagedListView<T>> createState() => ChatPagedListViewState<T>();
@@ -41,20 +41,16 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
   @override
   void didUpdateWidget(covariant ChatPagedListView<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print("didUpdateWidget");
   }
 
   @override
   void initState() {
     super.initState();
-    print("initState");
     WidgetsBinding.instance.addObserver(this);
     state = ChatState<T>(messages: []);
-
     scrollController.addListener(_scrollControllerListener);
     observerController = ListObserverController(controller: scrollController)
       ..cacheJumpIndexOffset = false;
-
     chatObserver = ChatScrollObserver(observerController)
       ..fixedPositionOffset = 5
       ..toRebuildScrollViewCallback = () {
@@ -71,10 +67,8 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
           break;
       }
     };
-
     pagingController
         .addPageRequestListener((pageKey) => handleEvent(FetchPage(pageKey)));
-
     handleEvent(LoadInitialMessages());
   }
 
@@ -103,7 +97,6 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
   }
 
   Future<void> _onFetchPage(FetchPage event) async {
-    print("_onFetchPage: ");
     setState(() => state = state.copyWith(isLoading: true));
     await Future.delayed(const Duration(seconds: 2));
     try {
@@ -120,13 +113,11 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
   }
 
   void _onToggleEditReadOnly(ToggleEditReadOnly event) {
-    print("_onToggleEditReadOnly: ");
     setState(() =>
         state = state.copyWith(editViewReadOnly: !state.editViewReadOnly));
   }
 
   void _onAddMessage(AddMessage event) {
-    print("_onAddMessage: ");
     chatObserver.standby(changeCount: event.messages.length);
     pagingController.itemList?.insert(0, widget.createItems(num: 1).first);
     setState(() => state = state.copyWith(
@@ -135,7 +126,6 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
   }
 
   void _onClearInputAndAddMessage(ClearInputAndAddMessage event) {
-    print("_onClearInputAndAddMessage: ");
     handleEvent(AddMessage([
       MessageEntity(
           messageId: 'messageId',
@@ -147,7 +137,6 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
   }
 
   void _onUpdateUnreadMsgCount(UpdateUnreadMsgCount event) {
-    print("_onUpdateUnreadMsgCount: ");
     final newCount =
         event.isReset ? 0 : state.unreadMsgCount + event.changeCount;
     unreadMsgCount.value = newCount;
@@ -156,7 +145,6 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
   }
 
   void _scrollControllerListener() {
-    // print("_scrollControllerListener: ");
     if (scrollController.offset < 50) {
       handleEvent(UpdateUnreadMsgCount(isReset: true));
     }
@@ -164,7 +152,6 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
 
   @override
   Widget build(BuildContext context) {
-    print('PagedListView build: ${chatObserver.isShrinkWrap}');
     return Column(
       children: [
         Expanded(

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:ziichat_ui_v2/domain/mock_entities/mock_file_metadata.dart';
