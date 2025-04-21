@@ -7,14 +7,14 @@ import 'package:ziichat_ui_v2/domain/mock_entities/mock_file_metadata.dart';
 import 'package:ziichat_ui_v2/domain/mock_entities/mock_message_entity.dart';
 import 'package:ziichat_ui_v2/domain/mock_entities/mock_user_entity.dart';
 import 'package:ziichat_ui_v2/page/chats/editor/editor.dart';
-import 'package:ziichat_ui_v2/page/chats/message_list/message_items_newest/join_message_newest.dart';
-import 'package:ziichat_ui_v2/page/chats/message_list/message_items_newest/photo_message_newest.dart';
-import 'package:ziichat_ui_v2/page/chats/message_list/message_items_newest/sticker_message_newest.dart';
-import 'package:ziichat_ui_v2/page/chats/message_list/message_items_newest/system_message_newest.dart';
-import 'package:ziichat_ui_v2/page/chats/message_list/message_items_newest/text_message_newest.dart';
-import 'package:ziichat_ui_v2/page/chats/message_list/message_items_newest/video_message_newest.dart';
-import 'package:ziichat_ui_v2/page/chats/message_list/message_items_newest/voice_message_newest.dart';
-import 'package:ziichat_ui_v2/page/chats/message_list/message_items_newest/wave_message_newest.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/join_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/photo_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/sticker_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/system_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/text_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/video_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/voice_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/wave_message.dart';
 import 'package:ziichat_ui_v2/page/chats/message_list/widget/channel_navigation_bar.dart';
 import 'package:ziichat_ui_v2/utils/constants/enum.dart';
 import 'package:ziichat_ui_v2/utils/constants/sizes.dart';
@@ -158,21 +158,21 @@ class _MessageListPageState extends State<MessageList> {
 Widget renderMessageNewest(MessageEntity messageEntity) {
   switch (messageEntity.messageType) {
     case MessageType.text:
-      return TextMessageNewest(messageEntity: messageEntity);
+      return TextMessage(messageEntity: messageEntity);
     case MessageType.sticker:
-      return StickerMessageNewest(messageEntity: messageEntity);
+      return StickerMessage(messageEntity: messageEntity);
     case MessageType.image:
-      return PhotoMessageNewest(messageEntity: messageEntity);
+      return PhotoMessage(messageEntity: messageEntity);
     case MessageType.video || MessageType.videoAttachment:
-      return VideoMessageNewest(messageEntity: messageEntity);
+      return VideoMessage(messageEntity: messageEntity);
     case MessageType.audio:
-      return VoiceMessageNewest(messageEntity: messageEntity);
+      return VoiceMessage(messageEntity: messageEntity);
     case MessageType.system:
-      return SystemMessageNewest(messageEntity: messageEntity);
+      return SystemMessage(messageEntity: messageEntity);
     case MessageType.wave:
-      return WaveMessageNewest(messageEntity: messageEntity);
+      return WaveMessage(messageEntity: messageEntity);
     case MessageType.joinMember:
-      return JoinMemberMessageNewest(messageEntity: messageEntity);
+      return JoinMemberMessage(messageEntity: messageEntity);
   }
 }
 
