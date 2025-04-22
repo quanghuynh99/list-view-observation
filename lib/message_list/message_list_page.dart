@@ -2,9 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:list_view/helper/message_helper.dart';
 import 'package:list_view/message_list/message_events.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
-import 'package:ziichat_ui_v2/domain/mock_entities/mock_message_entity.dart';
+import 'package:ziichat_ui_v2/page/chats/editor/editor.dart';
+import 'package:ziichat_ui_v2/ziichat_ui_v2.dart';
 
 class MessageListPage<T> extends StatefulWidget {
   final Widget Function(BuildContext, T, int) itemBuilder;
@@ -150,78 +152,102 @@ class ChatPagedListViewState<T> extends State<MessageListPage<T>>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: ListViewObserver(
-            controller: observerController,
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return Stack(
-                    children: [
-                      PagedListView<int, T>(
-                        pagingController: pagingController,
-                        scrollController: scrollController,
-                        shrinkWrap: chatObserver.isShrinkWrap,
-                        builderDelegate: PagedChildBuilderDelegate<T>(
-                          itemBuilder: (context, item, index) {
-                            final itemKey = widget.itemKeyExtractor != null
-                                ? widget.itemKeyExtractor!(item)
-                                : index.toString();
-                            final isAnimated = animatedItems[itemKey] ?? false;
+    return Expanded(
+      child: Column(
+        children: [
+          Expanded(
+            child: ListViewObserver(
+              controller: observerController,
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Stack(
+                      children: [
+                        PagedListView<int, T>(
+                          pagingController: pagingController,
+                          scrollController: scrollController,
+                          shrinkWrap: chatObserver.isShrinkWrap,
+                          builderDelegate: PagedChildBuilderDelegate<T>(
+                            itemBuilder: (context, item, index) {
+                              final itemKey = widget.itemKeyExtractor != null
+                                  ? widget.itemKeyExtractor!(item)
+                                  : index.toString();
+                              final isAnimated =
+                                  animatedItems[itemKey] ?? false;
 
-                            if (!isAnimated) {
-                              animatedItems[itemKey] = true;
-                              return SlideTransition(
-                                key: Key(itemKey),
-                                position: Tween<Offset>(
-                                  begin: const Offset(0.0, 1.0),
-                                  end: Offset.zero,
-                                ).animate(CurvedAnimation(
-                                  parent: AnimationController(
-                                    duration: const Duration(milliseconds: 300),
-                                    vsync: this,
-                                  )..forward(),
-                                  curve: Curves.easeInOut,
-                                )),
-                                child: FadeTransition(
-                                  opacity: Tween<double>(begin: 0.0, end: 1.0)
-                                      .animate(CurvedAnimation(
+                              if (!isAnimated) {
+                                animatedItems[itemKey] = true;
+                                return SlideTransition(
+                                  key: Key(itemKey),
+                                  position: Tween<Offset>(
+                                    begin: const Offset(0.0, 1.0),
+                                    end: Offset.zero,
+                                  ).animate(CurvedAnimation(
                                     parent: AnimationController(
                                       duration:
-                                          const Duration(milliseconds: 500),
+                                          const Duration(milliseconds: 300),
                                       vsync: this,
                                     )..forward(),
                                     curve: Curves.easeInOut,
                                   )),
-                                  child:
-                                      widget.itemBuilder(context, item, index),
-                                ),
-                              );
-                            }
-                            return widget.itemBuilder(context, item, index);
-                          },
+                                  child: FadeTransition(
+                                    opacity: Tween<double>(begin: 0.0, end: 1.0)
+                                        .animate(CurvedAnimation(
+                                      parent: AnimationController(
+                                        duration:
+                                            const Duration(milliseconds: 500),
+                                        vsync: this,
+                                      )..forward(),
+                                      curve: Curves.easeInOut,
+                                    )),
+                                    child: widget.itemBuilder(
+                                        context, item, index),
+                                  ),
+                                );
+                              }
+                              return widget.itemBuilder(context, item, index);
+                            },
+                          ),
+                          reverse: true,
+                          physics: chatObserver.isShrinkWrap
+                              ? const NeverScrollableScrollPhysics()
+                              : ChatObserverClampingScrollPhysics(
+                                  observer: chatObserver),
+                          padding: const EdgeInsets.all(15),
                         ),
-                        reverse: true,
-                        physics: chatObserver.isShrinkWrap
-                            ? const NeverScrollableScrollPhysics()
-                            : ChatObserverClampingScrollPhysics(
-                                observer: chatObserver),
-                        padding: const EdgeInsets.all(15),
-                      ),
-                    ],
-                  );
-                },
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),
-        ),
-        CompositedTransformTarget(link: layerLink, child: Container()),
-      ],
+          CompositedTransformTarget(link: layerLink, child: Container()),
+          Editor(
+              textEditingController: textEditingController,
+              didTapEmojiButton: () {},
+              didTapFileButton: () {},
+              didTapSendButton: (_) {
+                AddMessage([
+                  MessageEntity(
+                    messageId: MessageHelper.string(16),
+                    messageType: MessageType.text,
+                    updateTime: DateTime.now().toIso8601String(),
+                    content: textEditingController.text,
+                    isOutgoing: Random().nextBool(),
+                  )
+                ]);
+              },
+              didTapRemoveAll: () {},
+              didDeleteItem: (_) {},
+              fileList: [])
+        ],
+      ),
     );
   }
+
+  late TextEditingController textEditingController = TextEditingController();
 
   @override
   void dispose() {
