@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:list_view/helper/message_helper.dart';
 import 'package:list_view/message_list/message_events.dart';
+import 'package:list_view/widgets/unread_view.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
+import 'package:ziichat_ui_v2/domain/mock_entities/mock_message_entity.dart';
 import 'package:ziichat_ui_v2/page/chats/editor/editor.dart';
 import 'package:ziichat_ui_v2/ziichat_ui_v2.dart';
 
@@ -72,6 +74,8 @@ class ChatPagedListViewState<T> extends State<MessageListPage<T>>
     pagingController
         .addPageRequestListener((pageKey) => handleEvent(FetchPage(pageKey)));
     handleEvent(LoadInitialMessages());
+    Future.delayed(
+        const Duration(seconds: 1), () => handleEvent(AddUnreadTipView()));
   }
 
   void handleEvent(ChatEvent event) {
@@ -85,6 +89,8 @@ class ChatPagedListViewState<T> extends State<MessageListPage<T>>
       _onAddMessage(event);
     } else if (event is UpdateUnreadMsgCount) {
       _onUpdateUnreadMsgCount(event);
+    } else if (event is AddUnreadTipView) {
+      _onAddUnreadTipView(event);
     }
   }
 
@@ -119,35 +125,64 @@ class ChatPagedListViewState<T> extends State<MessageListPage<T>>
 
   void _onAddMessage(AddMessage event) {
     chatObserver.standby(changeCount: event.messages.length);
-    pagingController.itemList?.insert(0, widget.createItems.first);
+    final message = MessageHelper.mockMessages(num: 1).first as T;
+    pagingController.itemList?.insert(0, message);
     setState(() => state = state.copyWith(
           needIncrementUnreadMsgCount: true,
         ));
   }
 
-  // void _onClearInputAndAddMessage(ClearInputAndAddMessage event) {
-  //   handleEvent(AddMessage([
-  //     MessageEntity(
-  //         messageId: 'messageId',
-  //         messageType: MessageType.text,
-  //         content: 'Random content here',
-  //         updateTime: DateTime.now().toIso8601String(),
-  //         isOutgoing: Random().nextBool())
-  //   ]));
-  // }
-
   void _onUpdateUnreadMsgCount(UpdateUnreadMsgCount event) {
     final newCount =
-        event.isReset ? 0 : state.unreadMsgCount + event.changeCount;
-    unreadMsgCount.value = newCount;
-    setState(() => state = state.copyWith(
-        unreadMsgCount: newCount, needIncrementUnreadMsgCount: false));
+      event.isReset ? 0 : state.unreadMsgCount + event.changeCount;
+  unreadMsgCount.value = newCount;
+  setState(() => state = state.copyWith(
+        unreadMsgCount: newCount,
+        needIncrementUnreadMsgCount: false,
+      ));
   }
 
   void _scrollControllerListener() {
     if (scrollController.offset < 50) {
       handleEvent(UpdateUnreadMsgCount(isReset: true));
     }
+  }
+
+  void _onAddUnreadTipView(AddUnreadTipView event) {
+    setState(() => state = state.copyWith(showUnreadTip: true));
+    _addUnreadTipOverlay();
+  }
+
+  void _addUnreadTipOverlay() {
+    unreadTipOverlay?.remove();
+    unreadTipOverlay = OverlayEntry(
+      builder: (_) => UnconstrainedBox(
+        child: CompositedTransformFollower(
+          link: layerLink,
+          followerAnchor: Alignment.bottomRight,
+          targetAnchor: Alignment.topRight,
+          offset: const Offset(-20, 0),
+          child: Material(
+            type: MaterialType.transparency,
+            child: ValueListenableBuilder<int>(
+              valueListenable: unreadMsgCount,
+              builder: (_, value, __) => UnreadView(
+                unreadMsgCount: value,
+                onTap: () {
+                  scrollController.animateTo(
+                    0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                  handleEvent(UpdateUnreadMsgCount(isReset: true));
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    Overlay.of(context).insert(unreadTipOverlay!);
   }
 
   @override
@@ -229,7 +264,7 @@ class ChatPagedListViewState<T> extends State<MessageListPage<T>>
               didTapEmojiButton: () {},
               didTapFileButton: () {},
               didTapSendButton: (_) {
-                AddMessage([
+                handleEvent(AddMessage([
                   MessageEntity(
                     messageId: MessageHelper.string(16),
                     messageType: MessageType.text,
@@ -237,7 +272,7 @@ class ChatPagedListViewState<T> extends State<MessageListPage<T>>
                     content: textEditingController.text,
                     isOutgoing: Random().nextBool(),
                   )
-                ]);
+                ]));
               },
               didTapRemoveAll: () {},
               didDeleteItem: (_) {},

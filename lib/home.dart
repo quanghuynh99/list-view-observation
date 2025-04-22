@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:list_view/helper/message_helper.dart';
 import 'package:list_view/message_list/message_list_page.dart';
-import 'package:ziichat_ui_v2/ziichat_ui_v2.dart';
+import 'package:ziichat_ui_v2/domain/mock_entities/mock_message_entity.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/join_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/photo_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/sticker_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/system_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/text_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/video_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/voice_message.dart';
+import 'package:ziichat_ui_v2/page/chats/message_list/message_items/wave_message.dart';
 
 class Home extends StatelessWidget {
   final GlobalKey<ChatPagedListViewState<MessageEntity>> _chatListKey =
@@ -14,7 +22,7 @@ class Home extends StatelessWidget {
       body: MessageListPage<MessageEntity>(
         key: _chatListKey,
         itemBuilder: (context, model, _) => renderMessage(model),
-        createItems: MessageHelper.mockMessages,
+        createItems: MessageHelper.mockMessages(num: 10),
         itemKeyExtractor: (chatModel) => chatModel.messageId,
       ),
     );

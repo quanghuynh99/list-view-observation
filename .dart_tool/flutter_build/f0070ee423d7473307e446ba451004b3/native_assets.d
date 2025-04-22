@@ -1,0 +1,1 @@
+ /Users/quangdev/Desktop/list-view-observation/.dart_tool/flutter_build/f0070ee423d7473307e446ba451004b3/native_assets.yaml: 

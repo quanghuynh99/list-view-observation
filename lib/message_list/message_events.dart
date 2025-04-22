@@ -25,6 +25,8 @@ class UpdateUnreadMsgCount extends ChatEvent {
   UpdateUnreadMsgCount({this.isReset = false, this.changeCount = 1});
 }
 
+class AddUnreadTipView extends ChatEvent {}
+
 class ChatState<T> {
   final bool needIncrementUnreadMsgCount;
   final bool editViewReadOnly;
