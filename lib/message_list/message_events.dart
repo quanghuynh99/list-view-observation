@@ -19,8 +19,6 @@ class AddMessage extends ChatEvent {
   AddMessage(this.messages);
 }
 
-class ClearInputAndAddMessage extends ChatEvent {}
-
 class UpdateUnreadMsgCount extends ChatEvent {
   final bool isReset;
   final int changeCount;

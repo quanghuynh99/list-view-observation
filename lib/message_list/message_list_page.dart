@@ -6,13 +6,13 @@ import 'package:list_view/message_list/message_events.dart';
 import 'package:scrollview_observer/scrollview_observer.dart';
 import 'package:ziichat_ui_v2/domain/mock_entities/mock_message_entity.dart';
 
-class ChatPagedListView<T> extends StatefulWidget {
+class MessageListPage<T> extends StatefulWidget {
   final Widget Function(BuildContext, T, int) itemBuilder;
   final String Function(T)? itemKeyExtractor;
   final void Function(int)? onRemove;
-  final List<T> Function({int num}) createItems;
+  final List<T> createItems;
 
-  const ChatPagedListView({
+  const MessageListPage({
     super.key,
     required this.itemBuilder,
     required this.createItems,
@@ -21,10 +21,10 @@ class ChatPagedListView<T> extends StatefulWidget {
   });
 
   @override
-  State<ChatPagedListView<T>> createState() => ChatPagedListViewState<T>();
+  State<MessageListPage<T>> createState() => ChatPagedListViewState<T>();
 }
 
-class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
+class ChatPagedListViewState<T> extends State<MessageListPage<T>>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   final ScrollController scrollController = ScrollController();
   late ListObserverController observerController;
@@ -39,7 +39,7 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
   late ChatState<T> state;
 
   @override
-  void didUpdateWidget(covariant ChatPagedListView<T> oldWidget) {
+  void didUpdateWidget(covariant MessageListPage<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
   }
 
@@ -81,15 +81,13 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
       _onToggleEditReadOnly(event);
     } else if (event is AddMessage) {
       _onAddMessage(event);
-    } else if (event is ClearInputAndAddMessage) {
-      _onClearInputAndAddMessage(event);
     } else if (event is UpdateUnreadMsgCount) {
       _onUpdateUnreadMsgCount(event);
     }
   }
 
   Future<void> _onLoadInitialMessages(LoadInitialMessages event) async {
-    final initialMessages = widget.createItems(num: 10);
+    final initialMessages = widget.createItems;
     setState(() {
       state = state.copyWith(messages: initialMessages);
       pagingController.itemList = initialMessages;
@@ -100,7 +98,7 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
     setState(() => state = state.copyWith(isLoading: true));
     await Future.delayed(const Duration(seconds: 2));
     try {
-      final newItems = widget.createItems(num: 10);
+      final newItems = widget.createItems;
       final nextPageKey = event.pageKey + newItems.length;
       pagingController.appendPage(newItems, nextPageKey);
       setState(() => state = state.copyWith(
@@ -119,22 +117,22 @@ class ChatPagedListViewState<T> extends State<ChatPagedListView<T>>
 
   void _onAddMessage(AddMessage event) {
     chatObserver.standby(changeCount: event.messages.length);
-    pagingController.itemList?.insert(0, widget.createItems(num: 1).first);
+    pagingController.itemList?.insert(0, widget.createItems.first);
     setState(() => state = state.copyWith(
           needIncrementUnreadMsgCount: true,
         ));
   }
 
-  void _onClearInputAndAddMessage(ClearInputAndAddMessage event) {
-    handleEvent(AddMessage([
-      MessageEntity(
-          messageId: 'messageId',
-          messageType: MessageType.text,
-          content: 'Random content here',
-          updateTime: DateTime.now().toIso8601String(),
-          isOutgoing: Random().nextBool())
-    ]));
-  }
+  // void _onClearInputAndAddMessage(ClearInputAndAddMessage event) {
+  //   handleEvent(AddMessage([
+  //     MessageEntity(
+  //         messageId: 'messageId',
+  //         messageType: MessageType.text,
+  //         content: 'Random content here',
+  //         updateTime: DateTime.now().toIso8601String(),
+  //         isOutgoing: Random().nextBool())
+  //   ]));
+  // }
 
   void _onUpdateUnreadMsgCount(UpdateUnreadMsgCount event) {
     final newCount =
